@@ -1,4 +1,4 @@
-﻿-- Version : French ( by @project-author@ )
+-- Version : French ( by LenweSaralonde )
 -- Last Update : 22/05/2006
 
 if ( GetLocale() == "frFR" ) then

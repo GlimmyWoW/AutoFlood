@@ -1,9 +1,9 @@
 --[[
 	AutoFlood
 
-	Version : @project-version@
-	Date    : @project-date-iso@
-	Author  : @project-author@
+	Version : v1.2.0.16
+	Date    : 2018-12-14T20:56:54Z
+	Author  : LenweSaralonde
 ]]
 
 -- ===========================================
@@ -44,6 +44,7 @@ function AutoFlood_OnEvent(this, event, ...)
 			['system']    = "CHANNEL",
 			['channel']   = "1",
 			['rate']      = 60,
+			['random']	  = 30,
 			['idChannel'] = "1",
 		}
 
@@ -83,13 +84,14 @@ function AutoFlood_Off()
 	AF_active = false
 end
 
-
+local AutoFloodRandomNumb = 10
 -- Frame update handler
 function AutoFlood_OnUpdate(this, arg1)
 	if(not AF_active) then return end
 	AutoFlood_Frame.TimeSinceLastUpdate = AutoFlood_Frame.TimeSinceLastUpdate + arg1
-	if( AutoFlood_Frame.TimeSinceLastUpdate > AF_config[AF_myID]['rate'] ) then
+	if( AutoFlood_Frame.TimeSinceLastUpdate > (AF_config[AF_myID]['rate'] + AutoFloodRandomNumb) ) then
      	SendChatMessage(AF_config[AF_myID]['message'], AF_config[AF_myID]['system'], AutoFlood_Frame.language, GetChannelName(AF_config[AF_myID]['idChannel']))
+		AutoFloodRandomNumb = math.random(AF_config[AF_myID]['random'])
 		AutoFlood_Frame.TimeSinceLastUpdate = 0
 	end
 end
@@ -109,6 +111,7 @@ function AutoFlood_Info()
 	s = string.gsub(s, "MESSAGE", 	AF_config[AF_myID]['message'])
 	s = string.gsub(s, "CHANNEL", 	AF_config[AF_myID]['channel'])
 	s = string.gsub(s, "RATE", 		AF_config[AF_myID]['rate'])
+	s = string.gsub(s, "RANDOM", 		AF_config[AF_myID]['random'])
 	DEFAULT_CHAT_FRAME:AddMessage(s,1,1,1)
 end
 
@@ -140,6 +143,20 @@ function AutoFlood_SetRate(r)
     DEFAULT_CHAT_FRAME:AddMessage(s,1,1,1)
 end
 
+
+-- Set random innerval delay
+function AutoFlood_SetRandom(r)
+	local s
+
+	if((r ~= nil) and (tonumber(r) > 0) and (r ~= "")) then r = tonumber(r) end
+	if(r >= 0) then
+		AF_config[AF_myID]['random'] = r
+		s = string.gsub(AUTOFLOOD_RANDOM, "RANDOM", 	AF_config[AF_myID]['random'])
+	else
+		s = string.gsub(AUTOFLOOD_ERR_RANDOM, "RANDOM", 0)
+	end
+    DEFAULT_CHAT_FRAME:AddMessage(s,1,1,1)
+end
 
 -- Set the event / system / channel type according fo the game channel /ch.
 -- Allowed values : s, say, guild, raid, party and actually joined channel numbers (0-9)
@@ -220,6 +237,10 @@ SlashCmdList["AUTOFLOODSETCHANNEL"] = AutoFlood_SetChannel
 -- Set the period (in seconds)
 SlashCmdList["AUTOFLOODSETRATE"] = AutoFlood_SetRate
 
+-- /floodrate <duration>
+-- Set the period (in seconds)
+SlashCmdList["AUTOFLOODSETRANDOM"] = AutoFlood_SetRandom
+
 -- /floodinfo
 -- Display the parameters in chat window
 SlashCmdList["AUTOFLOODINFO"] = AutoFlood_Info
@@ -229,7 +250,7 @@ SlashCmdList["AUTOFLOODINFO"] = AutoFlood_Info
 SlashCmdList["AUTOFLOODHELP"] = function()
 	local l
 	for _, l in pairs(AUTOFLOOD_HELP) do
-		DEFAULT_CHAT_FRAME:AddMessage(l,1,1,1)
+		DEFAULT_CHAT_FRAME:AddMessage(l,1,1,1,1)
 	end
 end
 
@@ -244,6 +265,7 @@ SLASH_AUTOFLOODSETCHANNEL1 = "/floodchannel"
 SLASH_AUTOFLOODSETCHANNEL2 = "/floodchan"
 
 SLASH_AUTOFLOODSETRATE1    = "/floodrate"
+SLASH_AUTOFLOODSETRANDOM1    = "/floodrnd"
 
 SLASH_AUTOFLOODINFO1  	   = "/floodinfo"
 SLASH_AUTOFLOODINFO2  	   = "/floodconfig"
